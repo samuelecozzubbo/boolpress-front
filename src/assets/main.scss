@@ -1,0 +1,17 @@
+body{
+    background-color: brown;
+    color: white;
+    font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.container{
+    max-width: 900px;
+    border-radius: 10px;
+    border: 1px solid white;
+    padding: 10px;
+}
