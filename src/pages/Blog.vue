@@ -4,11 +4,15 @@
 import axios from 'axios';
 import { store } from '../store/store';
 import Loader from '../components/partials/Loader.vue';
+import Paginator from '../components/partials/Paginator.vue';
+//importo utils e metto in data
+import {getCategory, getTags, formatData} from '../data/utils';
 
     export default{
         name:'Blog',
         components:{
-            Loader
+            Loader,
+            Paginator
         },
         data(){
             return{
@@ -20,6 +24,9 @@ import Loader from '../components/partials/Loader.vue';
                 },
                 categories:[],
                 tags:[],
+                getCategory,
+                getTags,
+                formatData,
             }
         },
         methods:{
@@ -64,14 +71,38 @@ import Loader from '../components/partials/Loader.vue';
                 .catch(error => {
                 console.error('Errore durante la chiamata API:', error);
                 });
-            }
+            },
+            // getCategory(post){
+            //     if(post.category){
+            //         return post.category.name;
+            //     }
+            //     return 'Nessuna categoria';
+            // },
+            // getTags(post){
+            //     if(post.tags.length){
+            //         //SOLUZIONE CORTA ED EFFICACE MA COMPLESSA
+            //         return post.tags.map(tag=> tag.name).join(', ');
+            //         //SOLUZIONE PIU' FACILE MA LUNGA
+            //         // let tagString = '';
+            //         // post.tags.forEach((tag,index) => {
+            //         //     tagString += tag.name;
+            //         //     if (index < post.tags.length - 1) {
+            //         //         tagString += ', ';
+            //         //     }
+            //         // });
+            //         // return tagString;
+            //     }else{
+            //         return 'Nessun Tag';
+            //     }
+            // },
+            // formatData(date){
+            //     return new Date(date).toLocaleDateString();
+            // }
         },
         mounted(){
             this.getApi(store.apiUrl,'posts' /*  + 'posts' se cambio la route da / a /posts */);
             this.getApi(store.apiUrl + '/categories', 'categories');
             this.getApi(store.apiUrl + '/tags', 'tags');
-
-            
         }
     }
 </script>
@@ -85,34 +116,33 @@ import Loader from '../components/partials/Loader.vue';
     <div v-else>
         <ul>
             <li v-for="post in posts" :key="post.id">
-                <p class="title">{{ post.title }}</p>
-                <p class="caption">by: {{ post.user.name }} | Categoria: {{ post.category.name }}</p>
+                <p class="title">
+                    <router-link :to="{name: 'postDetail', params:{slug: post.slug}}">
+                        {{ post.title }}
+                    </router-link>
+                </p>
+                <p class="caption">
+                    by: {{ post.user.name }}
+                     | Categoria: {{ getCategory(post) }}
+                     |Tag: {{ getTags(post) }}
+                     |{{ formatData(post.created_at) }}
+                </p>
             </li>
         </ul>
-
-        <div class="paginator">
-            <button
-                v-for="(link,index) in paginatorData.links"
-                :key="index"
-                v-html="link.label"
-                :disabled="link.active || !link.url"
-                @click="getApi(link.url)">
-            </button>
-            <!-- v-html serve a interpetrare codice html presente dentro link.label
-            che non metterò dunque dentro le graffe, inoltre disabilito il bottone quando sono dentro
-            la scheda corrispondente -->    
-        </div>
+        <!-- PROPS -->
+        <Paginator @callApi="getApi" :data="paginatorData"/>
     </div>
+
     <div class="box-container">
         <div class="box">
-            <button v-for="category in categories" :key="category.id">
+            <router-link class="badge" v-for="category in categories" :key="category.id" :to="{name: 'postCategory', params:{slug: category.slug}}">
                 {{ category.name }}
-            </button>
+            </router-link>
         </div>
         <div class="box">
-            <button v-for="tag in tags" :key="tag.id">
+            <router-link class="badge" v-for="tag in tags" :key="tag.id" :to="{name: 'postTag', params:{slug: tag.slug}}">
                 {{ tag.name }}
-            </button>
+            </router-link>
         </div>
     </div>
     
@@ -125,14 +155,7 @@ import Loader from '../components/partials/Loader.vue';
     justify-content: center;
     padding: 30px 0;
 }
-.paginator{
-    display: flex;
-    justify-content: center;
 
-    button{
-        margin: 0 10px;
-    }
-}
 .content{
     display: flex;
     .title, .caption{
@@ -150,7 +173,27 @@ import Loader from '../components/partials/Loader.vue';
         button{
             margin: 8px;
         }
+        .badge{
+            display: inline-block;
+            margin: 5px 7px;
+            padding: 3px 5px;
+            border-radius: 5px;
+            border: solid 1px white;
+            background-color: lightgray;
+            color: black;
+            text-decoration: none;
+            font-size: 0.8em;
+            &:hover{
+                background-color: yellow;
+            }
+        }
     }
+    a{
+            color: white;
+            &:hover{
+                color:yellow;
+            }
+        }
 
 
 }
